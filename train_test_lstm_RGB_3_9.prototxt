@@ -1,0 +1,489 @@
+name: "lstm_joints"
+layer {
+  name: "data-new"
+  type: "Python"
+  top: "data"
+  top: "label"
+  top: "clip_markers"
+  python_param {
+    module: "sequence_input_layer_3_1"
+    layer: "videoRead"
+    param_str: "--buffersize=16 --buffer_num=25 --train_or_test=train --flow=False --path_to_images=/mnt/68FC8564543F417E/caffe/Data/ilids_oversampling_augment/ --video_list=ilids_triplet13_train_1.txt"
+  }
+  include: { phase: TRAIN }
+}
+layer {
+  name: "data-new"
+  type: "Python"
+  top: "data"
+  top: "label"
+  top: "clip_markers"
+  python_param {
+    module: "sequence_input_layer_3_1"
+    layer: "videoRead"
+    param_str: "--buffersize=16 --buffer_num=3 --train_or_test=test --flow=False --path_to_images=/mnt/68FC8564543F417E/caffe/Data/ilids_oversampling_augment/ --video_list=ilids_triplet13_test_1.txt"
+  }
+   include: { phase: TEST stage: "test-on-test" }
+}
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 96
+    kernel_size: 7
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+layer {
+  name: "relu1"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+}
+layer {
+  name: "pool1"
+  type: "Pooling"
+  bottom: "conv1"
+  top: "pool1"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "norm1"
+  type: "LRN"
+  bottom: "pool1"
+  top: "norm1"
+  lrn_param {
+    local_size: 5
+    alpha: 0.0001
+    beta: 0.75
+  }
+}
+layer {
+  name: "conv2"
+  type: "Convolution"
+  bottom: "norm1"
+  top: "conv2"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 384
+    kernel_size: 5
+    group: 2
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+layer {
+  name: "relu2"
+  type: "ReLU"
+  bottom: "conv2"
+  top: "conv2"
+}
+layer {
+  name: "pool2"
+  type: "Pooling"
+  bottom: "conv2"
+  top: "pool2"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "norm2"
+  type: "LRN"
+  bottom: "pool2"
+  top: "norm2"
+  lrn_param {
+    local_size: 5
+    alpha: 0.0001
+    beta: 0.75
+  }
+}
+layer {
+  name: "conv3"
+  type: "Convolution"
+  bottom: "norm2"
+  top: "conv3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+layer {
+  name: "relu3"
+  type: "ReLU"
+  bottom: "conv3"
+  top: "conv3"
+}
+layer {
+  name: "conv4"
+  type: "Convolution"
+  bottom: "conv3"
+  top: "conv4"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+    group: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+layer {
+  name: "relu4"
+  type: "ReLU"
+  bottom: "conv4"
+  top: "conv4"
+}
+layer {
+  name: "conv5"
+  type: "Convolution"
+  bottom: "conv4"
+  top: "conv5"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 384
+    pad: 1
+    kernel_size: 3
+    group: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+layer {
+  name: "relu5"
+  type: "ReLU"
+  bottom: "conv5"
+  top: "conv5"
+}
+layer {
+  name: "pool5"
+  type: "Pooling"
+  bottom: "conv5"
+  top: "pool5"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "fc6"
+  type: "InnerProduct"
+  bottom: "pool5"
+  top: "fc6"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 4096
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
+layer {
+  name: "relu6"
+  type: "ReLU"
+  bottom: "fc6"
+  top: "fc6"
+}
+layer {
+  name: "drop6"
+  type: "Dropout"
+  bottom: "fc6"
+  top: "fc6"
+  dropout_param {
+    dropout_ratio: 0.9
+  }
+}
+layer{
+  name: "reshape-data"
+  type: "Reshape"
+  bottom: "fc6"
+  top: "fc6-reshape"
+  reshape_param{
+    shape{
+      dim: 16
+      dim: 25
+      dim: 4096
+    }
+  }
+  include: { phase: TRAIN }
+}
+layer{
+  name: "reshape-data"
+  type: "Reshape"
+  bottom: "fc6"
+  top: "fc6-reshape"
+  reshape_param{
+    shape{
+      dim: 16
+      dim: 3
+      dim: 4096
+    }
+  }
+  include: { phase: TEST stage: "test-on-test" }
+}
+layer{
+  name: "reshape-label"
+  type: "Reshape"
+  bottom: "label"
+  top: "reshape-label"
+  reshape_param{
+    shape{
+      dim: 16
+      dim: 25
+    }
+  }
+  include: { phase: TRAIN }
+}
+layer{
+  name: "reshape-label"
+  type: "Reshape"
+  bottom: "label"
+  top: "reshape-label"
+  reshape_param{
+    shape{
+      dim: 16
+      dim: 3
+    }
+  }
+  include: { phase: TEST stage: "test-on-test" }
+}
+layer{
+  name: "reshape-cm"
+  type: "Reshape"
+  bottom: "clip_markers"
+  top: "reshape-cm"
+  reshape_param{
+    shape{
+      dim: 16
+      dim: 25
+    }
+  }
+  include: { phase: TRAIN }
+}
+layer{
+  name: "reshape-cm"
+  type: "Reshape"
+  bottom: "clip_markers"
+  top: "reshape-cm"
+  reshape_param{
+    shape{
+      dim: 16
+      dim: 3
+    }
+  }
+  include: { phase: TEST stage: "test-on-test" }
+}
+layer {
+  name: "lstm1"
+  type: "LSTM"
+  bottom: "fc6-reshape"
+  bottom: "reshape-cm"
+  top: "lstm1"
+  recurrent_param {
+    num_output: 256
+    weight_filler {
+      type: "uniform"
+      min: -0.01
+      max: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  name: "lstm1-drop"
+  type: "Dropout"
+  bottom: "lstm1"
+  top: "lstm1-drop"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+layer {
+  name: "fc8-final-new"
+  type: "InnerProduct"
+  bottom: "lstm1-drop"
+  top: "fc8-final"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 150
+    weight_filler {
+      type: "gaussian"
+      std: 0.0001
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    axis: 2
+  }
+}
+layer {
+  name: "buffer-pooling"
+  type: "Python"
+  bottom: "fc8-final"
+  bottom: "reshape-label"
+  top: "buffer-pooling-data"
+  top: "buffer-pooling-label"
+  python_param {
+    module: "my_cross_pooling_3_3"
+    layer: "BufferPoolingLayer"
+    param_str: "--buffersize=16 --pool=mean"
+  }
+}
+layer {
+  name: "norm3"
+  type: "Python"
+  bottom: "buffer-pooling-data"
+  top: "norm3"
+  python_param {
+    module: "l2norm_layer"
+    layer: "L2NormLayer"
+  }
+}
+layer {
+  name: "sample"
+  type: "Python"
+  bottom: "norm3"
+  bottom: "buffer-pooling-label"
+  top: "anchor"
+  top: "positive"
+  top: "negative"
+  python_param {
+    module: "triplet_sample_m1_3"
+    layer: "TripletSampleLayer"
+    param_str: "--margin=0.3 --max_triplet_num=1000000"
+}
+  include: { phase: TRAIN }
+}
+layer {
+  name: "loss_train"
+  type: "Python"
+  bottom: "anchor"
+  bottom: "positive"
+  bottom: "negative"
+  top: "loss"
+  python_param {
+    module: "triplet_loss_m1_3_2"
+    layer: "TripletLayer"
+    param_str: "--margin=0.3 --loss_file=/mnt/68FC8564543F417E/caffe/caffe-master/examples/LRCN_TEST/8/loss_file_9.txt"
+}
+  include: { phase: TRAIN }
+  loss_weight: 1
+}
+layer {
+  name: "features"
+  type: "Python"
+  bottom: "norm3"
+  bottom: "buffer-pooling-label"
+  python_param {
+    module: "my_features_3"
+    layer: "FeaturesLayer"
+    param_str: "--total_sum_num=300 --prefix=/mnt/68FC8564543F417E/caffe/caffe-master/examples/LRCN_TEST/8/mat/features_9_"
+}
+  include: { phase: TEST stage: "test-on-test" }
+}

@@ -1,0 +1,19 @@
+net: "train_test_lstm_RGB_3_9.prototxt"
+test_iter: 100
+test_state: { stage: 'test-on-test' }
+test_interval: 100
+base_lr: 1e-5
+lr_policy: "step"
+gamma: 0.1
+stepsize: 5000
+display: 20
+max_iter: 300000
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 5000
+snapshot_prefix: "/mnt/68FC8564543F417E/caffe/caffe-master/examples/LRCN_TEST/8/snapshots_lstm_RGB9"
+solver_mode: GPU
+device_id: 0
+random_seed: 1701
+average_loss: 1000
+clip_gradients: 5
